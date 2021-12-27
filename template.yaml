@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  PDFtoCSV
+Resources:
+  MountTargetVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  PDFtoCSV:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://bmv-sam-code/demo.zip
+      Handler: Printer_Job_Parser_v1.lambda_handler::handleRequest
+      Runtime: python3.8
+      Role: demo-function-role-626y4714
+      MemorySize: 512
+      Environment:
+        Variables:
+          PATH: /mnt/access/jre1.8.0_311/bin/
+          PYTHONPATH: /mnt/access/
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref SrcBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: Unprocessed/
+  SrcBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: bmv-konnected-printer-files
+
+
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+      - Key: Name
+        Value: PDFtoCSV
+  MountTargetSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: vpc-0aad7e8dbe7854576
+      GroupDescription: Security group for mount target
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 2049
+        ToPort: 2049
+        CidrIp: 0.0.0.0/0
+
+
+  MountTarget:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: fs-01f02c937c56b8c7d
+      SubnetId: vpc-0aad7e8dbe7854576
+      SecurityGroups:
+      - !GetAtt MountTargetVPC.DefaultSecurityGroup
