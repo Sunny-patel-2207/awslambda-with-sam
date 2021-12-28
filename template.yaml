@@ -43,5 +43,4 @@ Resources:
       FunctionName: !GetAtt PDFtoCSV.Arn
       Action: lambda:InvokeFunction
       Principal: s3.amazonaws.com
-      SourceAccount: !Ref 'AWS::326226458834'
       SourceArn: !Sub 'arn:aws:s3:::${S3Bucket}'
