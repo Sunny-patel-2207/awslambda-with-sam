@@ -11,6 +11,12 @@ Resources:
       Runtime: python3.8
       Role: arn:aws:iam::326226458834:role/service-role/demo-function-role-626y4714
       MemorySize: 512
+      VpcConfig:
+        SecurityGroupIds: 
+        - sg-006dc5242aef919a4
+        SubnetIds:
+        - subnet-01ba1a544ec2d947d
+        - subnet-01639cfeedf91da90
       Environment:
         Variables:
           PATH: /mnt/access/jre1.8.0_311/bin/
@@ -19,43 +25,10 @@ Resources:
         S3Event:
           Type: S3
           Properties:
-            Bucket: !Ref SrcBucket
+            Bucket: !Ref bmv-konnected-printer-files
             Events: s3:ObjectCreated:*
             Filter:
               S3Key:
                 Rules:
                   - Name: prefix
                     Value: Unprocessed/
-  SrcBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: bmv-konnected-printer-files
-
-
-  FileSystem:
-    Type: AWS::EFS::FileSystem
-    Properties:
-      PerformanceMode: generalPurpose
-      FileSystemTags:
-      - Key: Name
-        Value: PDFtoCSV
-  MountTargetSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId: vpc-0aad7e8dbe7854576
-      GroupDescription: Security group for mount target
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 2049
-        ToPort: 2049
-        CidrIp: 0.0.0.0/0
-
-
-  MountTarget:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: fs-01f02c937c56b8c7d
-      SubnetId: subnet-01639cfeedf91da90
-      SecurityGroups:
-      - !Ref MountTargetSecurityGroup
-    
