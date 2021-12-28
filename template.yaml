@@ -3,6 +3,11 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   PDFtoCSV
 Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      BucketName: demo-bmv-konnected-printer-files
   PDFtoCSV:
     Type: AWS::Serverless::Function
     Properties:
@@ -25,7 +30,7 @@ Resources:
         S3Event:
           Type: S3
           Properties:
-            Bucket: bmv-konnected-printer-files
+            Bucket: !Ref S3Bucket
             Events: s3:ObjectCreated:*
             Filter:
               S3Key:
