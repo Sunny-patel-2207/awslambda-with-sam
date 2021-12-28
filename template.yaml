@@ -9,7 +9,7 @@ Resources:
       CodeUri: s3://bmv-sam-code/demo.zip
       Handler: Printer_Job_Parser_v1.lambda_handler::handleRequest
       Runtime: python3.8
-      Role: demo-function-role-626y4714
+      Role: arn:aws:iam::326226458834:role/service-role/demo-function-role-626y4714
       MemorySize: 512
       Environment:
         Variables:
