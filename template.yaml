@@ -18,6 +18,7 @@ Resources:
       MemorySize: 512
       FileSystemConfigs:
       - Arn: arn:aws:elasticfilesystem:us-east-1:326226458834:access-point/fsap-07c8ececebe135f42
+        LocalMountPath: /mnt/access
       VpcConfig:
         SecurityGroupIds: 
         - sg-006dc5242aef919a4
