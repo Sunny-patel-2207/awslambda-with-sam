@@ -55,7 +55,7 @@ Resources:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: fs-01f02c937c56b8c7d
-      SubnetId: vpc-0aad7e8dbe7854576
+      SubnetId: subnet-01639cfeedf91da90
       SecurityGroups:
       - !Ref MountTargetSecurityGroup
     
