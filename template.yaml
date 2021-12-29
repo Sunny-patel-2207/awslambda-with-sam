@@ -93,7 +93,7 @@ Resources:
       CodeUri: s3://bmv-sam-code/demo.zip
       Handler: Printer_Job_Parser_v1.lambda_handler::handleRequest
       Runtime: python3.8
-      Role: !Ref RootRole
+      Role: !GetAtt RootRole.Arn
       MemorySize: 512
       VpcConfig:
         SecurityGroupIds: 
