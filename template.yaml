@@ -15,21 +15,17 @@ Resources:
   Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: VPC
+      VpcId: !Ref VPC  
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone:
-        Fn::Select: 
-        - 0
-        - Fn::GetAZs: ""
+      AvailabilityZone: !Ref AWS::Region
+
   EfsSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId:
-        Ref: VPC
+      VpcId: !Ref VPC   
       GroupDescription: "mnt target sg"
       SecurityGroupIngress:
-      - IpProtocol: -1
+      - IpProtocol: tcp
         CidrIp: "0.0.0.0/0"
   FileSystem:
     Type: AWS::EFS::FileSystem
@@ -38,8 +34,8 @@ Resources:
   AccessPoint:
     Type: AWS::EFS::AccessPoint
     Properties:
-      FileSystemId:
-        Ref: FileSystem
+      FileSystemId: !Ref FileSystem
+        
       PosixUser:
         Uid: "1001"
         Gid: "1001"
@@ -52,24 +48,23 @@ Resources:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId:
-        Ref: FileSystem
-      SubnetId:
-        Ref: Subnet1
-      SecurityGroups:
-      - Ref: EfsSecurityGroup
+        !Ref FileSystem
+      SubnetId: !Ref Subnet1
+        
+      SecurityGroups: !Ref EfsSecurityGroup
+      
   PDFtoCSV:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://bmv-sam-code/ScaleTicketParser.zip
+      CodeUri: s3://bmv-sam-code/demo.zip
       Handler: Printer_Job_Parser_v1.lambda_handler::handleRequest
       Runtime: python3.8
       Role: arn:aws:iam::326226458834:role/service-role/demo-function-role-626y4714
       MemorySize: 512
       VpcConfig:
-        SecurityGroupIds: 
-        - Ref: EfsSecurityGroup
-        SubnetIds:
-        - Ref: Subnet1
+        SecurityGroupIds: !Ref EfsSecurityGroup
+        SubnetIds: !Ref Subnet1
+      Environment:
         Variables:
           PATH: /mnt/access/jre1.8.0_311/bin/
           PYTHONPATH: /mnt/access/
