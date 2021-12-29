@@ -43,7 +43,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC  
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !GetAZs ''
+      AvailabilityZone: ap-south-1a
 
   EfsSecurityGroup:
     Type: AWS::EC2::SecurityGroup
