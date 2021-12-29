@@ -8,6 +8,55 @@ Resources:
     Properties:
       AccessControl: PublicRead
       BucketName: demo-bmv-konnected-printer-files
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone:
+        Fn::Select: 
+        - 0
+        - Fn::GetAZs: ""
+  EfsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: VPC
+      GroupDescription: "mnt target sg"
+      SecurityGroupIngress:
+      - IpProtocol: -1
+        CidrIp: "0.0.0.0/0"
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+  AccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      PosixUser:
+        Uid: "1001"
+        Gid: "1001"
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: "1001"
+          OwnerUid: "1001"
+          Permissions: "755"
+  MountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        Ref: Subnet1
+      SecurityGroups:
+      - Ref: EfsSecurityGroup
   PDFtoCSV:
     Type: AWS::Serverless::Function
     Properties:
@@ -16,16 +65,11 @@ Resources:
       Runtime: python3.8
       Role: arn:aws:iam::326226458834:role/service-role/demo-function-role-626y4714
       MemorySize: 512
-      FileSystemConfigs:
-      - Arn: arn:aws:elasticfilesystem:us-east-1:326226458834:access-point/fsap-07c8ececebe135f42
-        LocalMountPath: /mnt/access
       VpcConfig:
         SecurityGroupIds: 
-        - sg-006dc5242aef919a4
+        - Ref: EfsSecurityGroup
         SubnetIds:
-        - subnet-01ba1a544ec2d947d
-        - subnet-01639cfeedf91da90
-      Environment:
+        - Ref: Subnet1
         Variables:
           PATH: /mnt/access/jre1.8.0_311/bin/
           PYTHONPATH: /mnt/access/
@@ -40,6 +84,10 @@ Resources:
                 Rules:
                   - Name: prefix
                     Value: Unprocessed/
+      FileSystemConfigs:
+      - Arn: !GetAtt AccessPoint.Arn
+        LocalMountPath: /mnt/access
+    DependsOn: MountTarget1
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
