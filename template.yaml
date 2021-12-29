@@ -90,7 +90,7 @@ Resources:
   PDFtoCSV:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Printer_Job_Parser_v1.py
+      CodeUri: awslambda-with-sam-main
       Handler: Printer_Job_Parser_v1.lambda_handler::handleRequest
       Runtime: python3.8
       Role: !GetAtt RootRole.Arn
