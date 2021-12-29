@@ -60,7 +60,7 @@ Resources:
   PDFtoCSV:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://bmv-sam-code/demo.zip
+      CodeUri: s3://bmv-sam-code/ScaleTicketParser.zip
       Handler: Printer_Job_Parser_v1.lambda_handler::handleRequest
       Runtime: python3.8
       Role: arn:aws:iam::326226458834:role/service-role/demo-function-role-626y4714
