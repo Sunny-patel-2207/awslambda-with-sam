@@ -8,6 +8,32 @@ Resources:
     Properties:
       AccessControl: PublicRead
       BucketName: demo-bmv-konnected-printer-files
+  RootRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+  RolePolicies: 
+    Type: "AWS::IAM::Policy"
+    Properties: 
+      PolicyName: "root"
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Action: "*"
+            Resource: "*"
+      Roles: 
+      - !Ref RootRole
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -17,7 +43,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC  
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !Ref AWS::Region
+      AvailabilityZone: !GetAZs ''
 
   EfsSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -26,7 +52,14 @@ Resources:
       GroupDescription: "mnt target sg"
       SecurityGroupIngress:
       - IpProtocol: tcp
-        CidrIp: "0.0.0.0/0"
+        FromPort: 2049
+        ToPort: 2049
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 2049
+        ToPort: 2049
+        CidrIp: 0.0.0.0/0
   FileSystem:
     Type: AWS::EFS::FileSystem
     Properties:
@@ -51,7 +84,8 @@ Resources:
         !Ref FileSystem
       SubnetId: !Ref Subnet1
         
-      SecurityGroups: !Ref EfsSecurityGroup
+      SecurityGroups: 
+      - !Ref EfsSecurityGroup
       
   PDFtoCSV:
     Type: AWS::Serverless::Function
@@ -59,11 +93,13 @@ Resources:
       CodeUri: s3://bmv-sam-code/demo.zip
       Handler: Printer_Job_Parser_v1.lambda_handler::handleRequest
       Runtime: python3.8
-      Role: arn:aws:iam::326226458834:role/service-role/demo-function-role-626y4714
+      Role: !Ref RootRole
       MemorySize: 512
       VpcConfig:
-        SecurityGroupIds: !Ref EfsSecurityGroup
-        SubnetIds: !Ref Subnet1
+        SecurityGroupIds: 
+        - !Ref EfsSecurityGroup
+        SubnetIds:
+        - !Ref Subnet1
       Environment:
         Variables:
           PATH: /mnt/access/jre1.8.0_311/bin/
